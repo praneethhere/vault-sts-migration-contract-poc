@@ -5,3 +5,7 @@
 __pycache__/
 .pytest_cache/
 .vault-token
+
+# Phase 2 generated local files
+phase2-real-sts/openunison/generated/
+phase2-real-sts/openunison/chart-inspection/
