@@ -1,0 +1,12 @@
+global:
+  enabled: true
+  tlsDisable: true
+
+server:
+  enabled: true
+  dev:
+    enabled: true
+    devRootToken: root
+
+injector:
+  enabled: true
