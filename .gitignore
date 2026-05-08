@@ -1,0 +1,7 @@
+.DS_Store
+.env
+*.log
+*.token
+__pycache__/
+.pytest_cache/
+.vault-token

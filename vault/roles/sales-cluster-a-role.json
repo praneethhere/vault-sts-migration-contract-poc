@@ -1,0 +1,12 @@
+{
+  "role_type": "jwt",
+  "bound_audiences": ["vault"],
+  "user_claim": "sub",
+  "bound_claims": {
+    "cluster": "cluster-a",
+    "namespace": "sales",
+    "saname": "sales-app-sa"
+  },
+  "policies": ["sales-existing"],
+  "ttl": "15m"
+}
