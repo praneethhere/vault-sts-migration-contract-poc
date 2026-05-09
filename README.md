@@ -2,6 +2,21 @@
 
 This repository contains two related PoCs for validating Vault access during a Kubernetes platform migration.
 
+## Prerequisites
+
+Before running either PoC, review:
+
+    docs/prerequisites.md
+
+For macOS users, a Brewfile is included:
+
+    brew bundle
+
+A working Docker runtime is required. Validate with:
+
+    docker ps
+
+
 ## Phase 1: Vault JWT Contract PoC
 
 Location:
