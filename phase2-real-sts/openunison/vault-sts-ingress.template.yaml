@@ -10,10 +10,10 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - vault-sts.172-19-0-2.nip.io
+    - VAULT_STS_HOST_PLACEHOLDER
     secretName: ou-tls-certificate
   rules:
-  - host: vault-sts.172-19-0-2.nip.io
+  - host: VAULT_STS_HOST_PLACEHOLDER
     http:
       paths:
       - path: /

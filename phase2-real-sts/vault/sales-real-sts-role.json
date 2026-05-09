@@ -1,0 +1,12 @@
+{
+  "role_type": "jwt",
+  "bound_audiences": ["http://vault.vault.svc:8200"],
+  "user_claim": "sub",
+  "bound_claims": {
+    "cluster": "kubernetes",
+    "namespace": "sales",
+    "saname": "sales-app-sa"
+  },
+  "policies": ["sales-existing"],
+  "ttl": "15m"
+}

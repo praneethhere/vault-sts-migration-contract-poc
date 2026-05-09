@@ -1,5 +1,5 @@
 # Headless OpenUnison STS values for local kind PoC.
-# Generated for local testing only.
+# Local PoC only. Not production configuration.
 
 network:
   openunison_host: "OPENUNISON_HOST_PLACEHOLDER"

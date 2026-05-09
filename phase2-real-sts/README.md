@@ -1,66 +1,64 @@
 # Phase 2: Real OpenUnison STS Runtime PoC
 
-This phase extends the local Vault JWT contract PoC into a Kubernetes runtime PoC.
+This phase validates the full runtime path using Kubernetes, OpenUnison/Tremolo STS, Vault JWT auth, and an existing Vault secret path.
 
-## Goal
+## What This Phase Proves
 
-Validate the full runtime flow:
+This phase proves the real end-to-end flow:
 
-    Kubernetes Pod ServiceAccount token
-      -> OpenUnison/Tremolo STS TokenReview validation
-      -> short-lived Vault-scoped JWT
+    Kubernetes ServiceAccount token
+      -> OpenUnison/Tremolo STS exchange
+      -> short-lived JWT written to /tokens/token.jwt
       -> Vault JWT auth
-      -> Vault Agent Injector
-      -> existing Vault secret path
+      -> Vault token with sales-existing policy
+      -> existing Vault secret path read
 
-## Current checkpoint
+## Current Test Identity
 
-The following base components are working:
+    namespace: sales
+    serviceAccount: sales-app-sa
+    cluster claim: kubernetes
+    audience: http://vault.vault.svc:8200
 
-    kind cluster
-    ingress-nginx
-    Vault server in dev mode
-    Vault Agent Injector
-    baseline Vault secret
-    baseline Vault policy
-
-## Current validated Vault path
+## Existing Vault Secret Path
 
     secret/data/team-sales/config
 
-## Current validated policy
+The secret is not copied or moved.
 
-    path "secret/data/team-sales/*" {
-      capabilities = ["read"]
-    }
+## Positive Scenario
 
-## Why this phase matters
+The pod `sales/sts-mutation-test` uses the service account `sales-app-sa`.
 
-Phase 1 simulated the STS-issued JWT and proved that Vault can authorize access using JWT claims such as cluster, namespace, and service account.
+Expected result:
 
-Phase 2 is intended to prove the full runtime path using a real Kubernetes ServiceAccount token, real OpenUnison/Tremolo STS validation, real short-lived JWT issuance, and Vault Agent integration.
+    1. OpenUnison mutating webhook injects sts-creds-sidecar.
+    2. Sidecar exchanges the real Kubernetes service-account token.
+    3. A real short-lived STS JWT is written to /tokens/token.jwt.
+    4. Vault accepts the STS JWT through JWT auth.
+    5. Vault returns a token with sales-existing policy.
+    6. The existing Vault secret path is readable.
 
-## Current status
+## Negative Scenarios
 
-Completed:
+The following should be denied by OpenUnison STS authorization:
 
-    1. Created kind cluster with ingress port mapping.
-    2. Installed ingress-nginx.
-    3. Installed Vault server in dev mode.
-    4. Installed Vault Agent Injector.
-    5. Created baseline Vault secret.
-    6. Created baseline Vault policy.
+    finance / sales-app-sa
+    sales / wrong-sa
 
-Next:
+Expected result:
 
-    1. Install OpenUnison/Tremolo STS.
-    2. Configure Vault JWT auth to trust the real STS issuer.
-    3. Deploy a test pod with STS and Vault Agent annotations.
-    4. Validate positive and negative access-control scenarios.
+    OpenUnison STS returns HTTP 403 and no valid token is generated.
 
-## Scripts
+## One-Command Run
 
-Create the kind cluster:
+From the repository root:
+
+    ./phase2-real-sts/scripts/90-run-real-sts-e2e.sh
+
+## Manual Run
+
+Create kind cluster:
 
     ./phase2-real-sts/scripts/00-create-kind.sh
 
@@ -72,12 +70,44 @@ Install Vault and Vault Agent Injector:
 
     ./phase2-real-sts/scripts/02-install-vault.sh
 
-Configure the baseline Vault secret and policy:
+Configure baseline Vault secret and policy:
 
     ./phase2-real-sts/scripts/03-configure-vault-baseline.sh
 
+Install OpenUnison/Tremolo STS:
+
+    ./phase2-real-sts/scripts/04-install-openunison-sts.sh
+
+Create the positive test pod:
+
+    ./phase2-real-sts/scripts/05-create-sales-test-pod.sh
+
+Configure Vault JWT auth for the real STS signer:
+
+    ./phase2-real-sts/scripts/06-configure-vault-real-sts.sh
+
+Validate real STS token login to Vault:
+
+    ./phase2-real-sts/scripts/07-test-real-sts-to-vault.sh
+
+Run negative tests:
+
+    ./phase2-real-sts/scripts/08-test-negative-real-sts.sh
+
+Clean up:
+
+    ./phase2-real-sts/scripts/99-cleanup-real-sts.sh
+
 ## Notes
 
-Vault is running in dev mode only for this local PoC.
+This is a local PoC only.
 
-Do not use this Vault configuration for production.
+Vault runs in dev mode.
+
+The OpenUnison STS issuer host is generated dynamically using the kind node IP and nip.io.
+
+Generated local files are written under:
+
+    phase2-real-sts/openunison/generated/
+
+Those files are ignored by git.

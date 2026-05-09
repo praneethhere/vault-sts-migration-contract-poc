@@ -39,7 +39,7 @@ The generated STS JWT included:
 
 ```json
 {
-  "iss": "https://vault-sts.172-19-0-2.nip.io",
+  "iss": "https://<vault-sts-host>",
   "aud": "http://vault.vault.svc:8200",
   "sub": "kubernetes:sales:sales-app-sa",
   "cluster": "kubernetes",

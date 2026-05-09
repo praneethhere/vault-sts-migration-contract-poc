@@ -1,20 +1,16 @@
-.PHONY: start configure test negative cutover cleanup
+.PHONY: phase1-test phase1-cleanup phase2-e2e phase2-cleanup
 
-start:
-	./scripts/00-start.sh
+phase1-test:
+	cd phase1-vault-contract && $(MAKE) cleanup || true
+	cd phase1-vault-contract && $(MAKE) start
+	cd phase1-vault-contract && $(MAKE) configure
+	cd phase1-vault-contract && $(MAKE) test
 
-configure:
-	./scripts/01-configure-vault.sh
+phase1-cleanup:
+	cd phase1-vault-contract && $(MAKE) cleanup
 
-test:
-	./scripts/02-test-success.sh
-	./scripts/03-test-negative.sh
+phase2-e2e:
+	./phase2-real-sts/scripts/90-run-real-sts-e2e.sh
 
-negative:
-	./scripts/03-test-negative.sh
-
-cutover:
-	./scripts/04-test-cutover.sh
-
-cleanup:
-	./scripts/99-cleanup.sh
+phase2-cleanup:
+	./phase2-real-sts/scripts/99-cleanup-real-sts.sh
