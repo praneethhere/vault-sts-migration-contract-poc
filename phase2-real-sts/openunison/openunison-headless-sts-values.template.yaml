@@ -1,0 +1,81 @@
+# Headless OpenUnison STS values for local kind PoC.
+# Local PoC only. Not production configuration.
+
+network:
+  openunison_host: "OPENUNISON_HOST_PLACEHOLDER"
+  dashboard_host: "DASHBOARD_HOST_PLACEHOLDER"
+  api_server_host: "API_HOST_PLACEHOLDER"
+  ingress_type: nginx
+  ingress_certificate: ou-tls-certificate
+  ingress_annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+cert_template:
+  ou: "Local STS PoC"
+  o: "Local"
+  l: "Local"
+  st: "Local"
+  c: "US"
+
+services:
+  liveness_probe:
+  - /usr/local/openunison/bin/check_alive.sh
+  - "https://127.0.0.1:8443/check_alive"
+  - "issuer"
+  - "https://127.0.0.1:8443/check_alive"
+  - "alive"
+  readiness_probe:
+  - /usr/local/openunison/bin/check_alive.sh
+  - "https://127.0.0.1:8443/check_alive"
+  - "issuer"
+  - "https://127.0.0.1:8443/check_alive"
+  - "alive"
+
+headlamp:
+  enabled: false
+
+dashboard:
+  enabled: false
+
+openunison:
+  enable_portal: false
+  enable_pre_check: false
+  enable_provisioning: false
+  generate_idp_key_secret: true
+  non_secret_data: {}
+  secrets: []
+  keys:
+  - name: sts-vault
+    import_into_ks: keypair
+    tls_secret_name: vault-sts-keypair
+    replace_if_exists: true
+    create_data:
+      ca_cert: true
+      key_size: 2048
+      server_name: vault-sts-keypair
+
+operator:
+  mutators:
+  - injector-vault
+
+sts:
+  image: ghcr.io/openunison/openunison-cli:1.3.0
+  openunison:
+    name: orchestra
+    namespace: openunison
+  endpoints:
+  - name: vault
+    host_in_openunison: true
+    audience: "http://vault.vault.svc:8200"
+    path: /vault
+    azRules:
+    - scope: filter
+      constraint: "(&(namespace=sales)(saname=sales-app-sa)(cluster=kubernetes))"
+    issuer:
+      host: "VAULT_STS_HOST_PLACEHOLDER"
+      keypair: sts-vault
+    injector:
+      label: vault-sts
+      token_environment_variable_name: VAULT_TOKEN_FILE
+      label_value_environment_variable_name: VAULT_TOKEN_ENABLED
+      explicit_certificate_trust: true
